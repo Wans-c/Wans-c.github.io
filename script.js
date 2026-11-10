@@ -7,14 +7,38 @@ const empty = document.querySelector('#empty-state');
 const error = document.querySelector('#load-error');
 const dialog = document.querySelector('#article-dialog');
 const dialogContent = document.querySelector('#dialog-content');
+const themeButtons = [...document.querySelectorAll('.theme-btn')];
 
 function escapeHTML(value) {
   return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 }
 
+function getSeasonByMonth() {
+  const month = new Date().getMonth() + 1;
+  if (month >= 3 && month <= 5) return 'spring';
+  if (month >= 6 && month <= 8) return 'summer';
+  if (month >= 9 && month <= 11) return 'autumn';
+  return 'winter';
+}
+
+function applyTheme(themeName) {
+  const validThemes = ['spring', 'summer', 'autumn', 'winter'];
+  const theme = validThemes.includes(themeName) ? themeName : getSeasonByMonth();
+  document.documentElement.setAttribute('data-theme', theme);
+  themeButtons.forEach(button => button.classList.toggle('active', button.dataset.theme === theme));
+
+  const colors = { spring: '#f4fbe7', summer: '#ebf8ff', autumn: '#fbf0e4', winter: '#09131b' };
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', colors[theme]);
+  try { localStorage.setItem('blog-theme', theme); } catch {}
+}
+
 function renderFilters() {
   const categories = ['全部', ...new Set(state.posts.map(post => post.category))];
-  filters.innerHTML = categories.map(category => `<button class="filter-button${state.category === category ? ' selected' : ''}" type="button" data-category="${escapeHTML(category)}" aria-pressed="${state.category === category}">${escapeHTML(category)}</button>`).join('');
+  filters.innerHTML = categories.map(category => `
+    <button class="filter-button${state.category === category ? ' selected' : ''}" type="button" data-category="${escapeHTML(category)}" aria-pressed="${state.category === category}">
+      ${escapeHTML(category)}
+    </button>
+  `).join('');
 }
 
 function renderPosts() {
@@ -24,22 +48,33 @@ function renderPosts() {
     const searchable = [post.title, post.excerpt, post.category, ...post.tags].join(' ').toLocaleLowerCase();
     return matchesCategory && searchable.includes(normalizedQuery);
   });
+
   count.textContent = `共 ${visible.length} 篇文章`;
   empty.hidden = visible.length > 0;
   grid.innerHTML = visible.map(post => `
     <article class="post-card" tabindex="0" role="button" data-post-id="${post.id}" aria-label="阅读：${escapeHTML(post.title)}">
       <div class="card-top"><span class="category-tag">${escapeHTML(post.category)}</span><time class="post-date" datetime="${escapeHTML(post.date)}">${escapeHTML(post.date.replaceAll('-', '.'))}</time></div>
       <h3>${escapeHTML(post.title)}</h3><p class="post-excerpt">${escapeHTML(post.excerpt)}</p>
-      <div class="card-bottom"><div class="tag-list">${post.tags.slice(0, 2).map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join('')}</div><span class="read-time">${escapeHTML(post.readTime)} 分钟阅读</span></div><span class="card-arrow" aria-hidden="true">↗</span>
-    </article>`).join('');
+      <div class="card-bottom"><div class="tag-list">${post.tags.slice(0, 2).map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join('')}</div><span class="read-time">${escapeHTML(post.readTime)} 分钟阅读</span></div>
+    </article>
+  `).join('');
 }
 
 function openPost(id) {
   const post = state.posts.find(item => item.id === Number(id));
   if (!post) return;
-  dialogContent.innerHTML = `<span class="dialog-meta">${escapeHTML(post.category)} · ${escapeHTML(post.date.replaceAll('-', '.'))} · ${escapeHTML(post.readTime)} 分钟阅读</span><h2>${escapeHTML(post.title)}</h2><p class="dialog-excerpt">${escapeHTML(post.excerpt)}</p><p class="dialog-body">${escapeHTML(post.body)}</p><div class="dialog-tags">${post.tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join('')}</div>`;
+  dialogContent.innerHTML = `
+    <span class="dialog-meta">${escapeHTML(post.category)} · ${escapeHTML(post.date.replaceAll('-', '.'))} · ${escapeHTML(post.readTime)} 分钟阅读</span>
+    <h2>${escapeHTML(post.title)}</h2>
+    ${post.content ? `<div class="dialog-body">${post.content}</div>` : ''}
+  `;
   dialog.showModal();
 }
+
+themeButtons.forEach(button => button.addEventListener('click', () => applyTheme(button.dataset.theme)));
+let savedTheme;
+try { savedTheme = localStorage.getItem('blog-theme'); } catch {}
+applyTheme(savedTheme || getSeasonByMonth());
 
 filters.addEventListener('click', event => {
   const button = event.target.closest('[data-category]');
@@ -65,9 +100,5 @@ document.addEventListener('keydown', event => {
 
 fetch('./posts.json')
   .then(response => { if (!response.ok) throw new Error('文章数据加载失败'); return response.json(); })
-  .then(posts => {
-    state.posts = posts.sort((a, b) => b.date.localeCompare(a.date));
-    renderFilters();
-    renderPosts();
-  })
+  .then(posts => { state.posts = posts.sort((a, b) => b.date.localeCompare(a.date)); renderFilters(); renderPosts(); })
   .catch(() => { count.textContent = '文章加载失败'; error.hidden = false; });
