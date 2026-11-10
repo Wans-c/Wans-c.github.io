@@ -1,21 +1,152 @@
-# Wans 的小站
+const state = { posts: [], category: '全部', query: '' };
+const grid = document.querySelector('#post-grid');
+const filters = document.querySelector('#filters');
+const search = document.querySelector('#search');
+const count = document.querySelector('#result-count');
+const empty = document.querySelector('#empty-state');
+const error = document.querySelector('#load-error');
+const dialog = document.querySelector('#article-dialog');
+const dialogContent = document.querySelector('#dialog-content');
+const themeButtons = [...document.querySelectorAll('.theme-btn')];
 
-一个使用原生 HTML、CSS 和 JavaScript 构建的轻量个人博客，可直接部署到 GitHub Pages。
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+}
 
-## 本地预览
+function getSeasonByMonth() {
+  const month = new Date().getMonth() + 1;
+  if (month >= 3 && month <= 5) return 'spring';
+  if (month >= 6 && month <= 8) return 'summer';
+  if (month >= 9 && month <= 11) return 'autumn';
+  return 'winter';
+}
 
-由于文章数据通过 `fetch` 从 JSON 文件读取，请使用本地静态服务器预览（不要直接用 `file://` 打开）：
+function applyTheme(themeName) {
+  document.documentElement.setAttribute('data-theme', themeName);
 
-```bash
-python3 -m http.server 8000
-```
+  themeButtons.forEach(button => {
+    button.classList.toggle('active', button.dataset.theme === themeName);
+  });
 
-然后访问 <http://localhost:8000>。
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  const colorMap = {
+    spring: '#f4efe6',
+    summer: '#eaf7ff',
+    autumn: '#f7efe6',
+    winter: '#0d1520'
+  };
 
-## 发布到 GitHub Pages
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', colorMap[themeName] || '#f4efe6');
+  }
 
-仓库已配置 GitHub Pages 时，提交 `index.html`、`styles.css`、`script.js` 和 `posts.json` 到发布分支即可。页面会从同目录下的 `posts.json` 加载文章。
+  localStorage.setItem('blog-theme', themeName);
+}
 
-## 添加文章
+function renderFilters() {
+  const categories = ['全部', ...new Set(state.posts.map(post => post.category))];
+  filters.innerHTML = categories.map(category => `
+    <button class="filter-button${state.category === category ? ' selected' : ''}" type="button" data-category="${escapeHTML(category)}" aria-pressed="${state.category === category}">
+      ${escapeHTML(category)}
+    </button>
+  `).join('');
+}
 
-编辑 `posts.json` 并追加一条记录，字段包括 `id`、`title`、`excerpt`、`category`、`date`（YYYY-MM-DD）、`readTime`、`tags` 和 `body`。目前已包含 20 条示例文章。替换示例内容后即可作为自己的博客使用。
+function renderPosts() {
+  const normalizedQuery = state.query.trim().toLocaleLowerCase();
+  const visible = state.posts.filter(post => {
+    const matchesCategory = state.category === '全部' || post.category === state.category;
+    const searchable = [post.title, post.excerpt, post.category, ...post.tags].join(' ').toLocaleLowerCase();
+    return matchesCategory && searchable.includes(normalizedQuery);
+  });
+
+  count.textContent = `共 ${visible.length} 篇文章`;
+  empty.hidden = visible.length > 0;
+  grid.innerHTML = visible.map(post => `
+    <article class="post-card" tabindex="0" role="button" data-post-id="${post.id}" aria-label="阅读：${escapeHTML(post.title)}">
+      <div class="card-top">
+        <span class="category-tag">${escapeHTML(post.category)}</span>
+        <time class="post-date" datetime="${escapeHTML(post.date)}">${escapeHTML(post.date.replaceAll('-', '.'))}</time>
+      </div>
+      <h3>${escapeHTML(post.title)}</h3>
+      <p class="post-excerpt">${escapeHTML(post.excerpt)}</p>
+      <div class="card-bottom">
+        <div class="tag-list">${post.tags.slice(0, 2).map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join('')}</div>
+        <span class="read-time">${escapeHTML(post.readTime)} 分钟阅读</span>
+      </div>
+    </article>
+  `).join('');
+}
+
+function openPost(id) {
+  const post = state.posts.find(item => item.id === Number(id));
+  if (!post) return;
+
+  dialogContent.innerHTML = `
+    <span class="dialog-meta">${escapeHTML(post.category)} · ${escapeHTML(post.date.replaceAll('-', '.'))} · ${escapeHTML(post.readTime)} 分钟阅读</span>
+    <h2>${escapeHTML(post.title)}</h2>
+    ${post.content ? `<div class="dialog-body">${post.content}</div>` : ''}
+  `;
+  dialog.showModal();
+}
+
+themeButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    applyTheme(button.dataset.theme);
+  });
+});
+
+const savedTheme = localStorage.getItem('blog-theme') || getSeasonByMonth();
+applyTheme(savedTheme);
+
+filters.addEventListener('click', event => {
+  const button = event.target.closest('[data-category]');
+  if (!button) return;
+
+  state.category = button.dataset.category;
+  renderFilters();
+  renderPosts();
+});
+
+search.addEventListener('input', () => {
+  state.query = search.value;
+  renderPosts();
+});
+
+grid.addEventListener('click', event => {
+  const card = event.target.closest('[data-post-id]');
+  if (card) openPost(card.dataset.postId);
+});
+
+grid.addEventListener('keydown', event => {
+  const card = event.target.closest('[data-post-id]');
+  if (card && (event.key === 'Enter' || event.key === ' ')) {
+    event.preventDefault();
+    openPost(card.dataset.postId);
+  }
+});
+
+document.querySelector('#dialog-close').addEventListener('click', () => dialog.close());
+dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+document.addEventListener('keydown', event => {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault();
+    search.focus();
+  }
+});
+
+fetch('./posts.json')
+  .then(response => {
+    if (!response.ok) throw new Error('文章数据加载失败');
+    return response.json();
+  })
+  .then(posts => {
+    state.posts = posts.sort((a, b) => b.date.localeCompare(a.date));
+    renderFilters();
+    renderPosts();
+  })
+  .catch(() => {
+    count.textContent = '文章加载失败';
+    error.hidden = false;
+  });
+
