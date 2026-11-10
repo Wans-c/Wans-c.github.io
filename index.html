@@ -4,36 +4,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Wans 的个人博客，记录技术、生活与日常灵感。">
-  <meta name="theme-color" content="#f4efe6">
+  <meta name="theme-color" content="#f4fbe7">
   <title>Wans 的小站 · 个人博客</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="season-themes.css">
 </head>
 <body>
   <header class="site-header page-width">
-    <a class="brand" href="#top" aria-label="Wans 的小站首页">
-      <span class="brand-mark">W</span>
-      <span>Wans<span class="brand-light">.log</span></span>
-    </a>
-
+    <a class="brand" href="#top" aria-label="Wans 的小站首页"><span class="brand-mark">W</span><span>Wans<span class="brand-light">.log</span></span></a>
     <nav class="main-nav" aria-label="主导航">
       <a class="nav-link active" href="#articles">文章</a>
       <a class="nav-link" href="#about">关于</a>
       <a class="nav-link" href="https://github.com/Wans-c" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
     </nav>
-
-    <div class="theme-switcher" aria-label="切换主题">
-      <button type="button" class="theme-btn active" data-theme="spring" aria-label="切换到春季主题">春</button>
-      <button type="button" class="theme-btn" data-theme="summer" aria-label="切换到夏季主题">夏</button>
-      <button type="button" class="theme-btn" data-theme="autumn" aria-label="切换到秋季主题">秋</button>
-      <button type="button" class="theme-btn" data-theme="winter" aria-label="切换到冬季主题">冬</button>
+    <div class="theme-switcher" role="group" aria-label="切换季节主题">
+      <button type="button" class="theme-btn" data-theme="spring" aria-label="春季主题">春</button>
+      <button type="button" class="theme-btn" data-theme="summer" aria-label="夏季主题">夏</button>
+      <button type="button" class="theme-btn" data-theme="autumn" aria-label="秋季主题">秋</button>
+      <button type="button" class="theme-btn" data-theme="winter" aria-label="冬季主题">冬</button>
     </div>
-
     <a class="header-cta" href="mailto:hello@wans.blog">联系我 <span aria-hidden="true">↗</span></a>
   </header>
-
   <main id="top">
     <section class="hero page-width" aria-labelledby="hero-title">
       <div class="hero-copy">
@@ -42,75 +36,26 @@
         <p class="hero-description">写代码，也写生活。把学到的新东西、走过的路和偶尔冒出的灵感，认真收藏起来。</p>
         <a class="text-link" href="#articles">逛逛最近的文章 <span aria-hidden="true">↓</span></a>
       </div>
-
       <div class="hero-art" aria-hidden="true">
-        <div class="orbit orbit-one"></div>
-        <div class="orbit orbit-two"></div>
-        <div class="sun"></div>
-        <div class="hill hill-back"></div>
-        <div class="hill hill-front"></div>
-        <div class="art-label label-top">NOTES FROM WANS</div>
-        <div class="art-label label-bottom">KEEP MAKING · KEEP GROWING</div>
-        <span class="spark spark-one">✳</span>
-        <span class="spark spark-two">✦</span>
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="sun"></div>
+        <div class="hill hill-back"></div><div class="hill hill-front"></div>
+        <div class="art-label label-top">NOTES FROM WANS</div><div class="art-label label-bottom">KEEP MAKING · KEEP GROWING</div>
+        <span class="spark spark-one">✳</span><span class="spark spark-two">✦</span>
       </div>
-
       <div class="hero-index"><span>01</span><span class="index-line"></span><span>个人博客 · 始于 2026</span></div>
     </section>
-
     <section class="content-section page-width" id="articles">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">THE JOURNAL</p>
-          <h2>最近的记录<span class="heading-period">.</span></h2>
-        </div>
-        <p class="section-note">一些关于技术、生活与持续探索的片段。</p>
-      </div>
-
-      <div class="toolbar">
-        <div class="filters" id="filters" aria-label="按分类筛选文章"></div>
-        <label class="search-box">
-          <span aria-hidden="true">⌕</span>
-          <input id="search" type="search" placeholder="搜索文章..." aria-label="搜索文章">
-          <kbd>⌘ K</kbd>
-        </label>
-      </div>
-
-      <div class="results-line">
-        <span id="result-count">正在加载文章…</span>
-        <span class="sort-label">按日期排列 <span aria-hidden="true">↓</span></span>
-      </div>
-
+      <div class="section-heading"><div><p class="eyebrow">THE JOURNAL</p><h2>最近的记录<span class="heading-period">.</span></h2></div><p class="section-note">一些关于技术、生活与持续探索的片段。</p></div>
+      <div class="toolbar"><div class="filters" id="filters" aria-label="按分类筛选文章"></div><label class="search-box"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="搜索文章..." aria-label="搜索文章"><kbd>⌘ K</kbd></label></div>
+      <div class="results-line"><span id="result-count">正在加载文章…</span><span class="sort-label">按日期排列 <span aria-hidden="true">↓</span></span></div>
       <div class="post-grid" id="post-grid" aria-live="polite"></div>
       <p class="empty-state" id="empty-state" hidden>没有找到匹配的文章，试试其他关键词吧。</p>
       <p class="load-error" id="load-error" hidden>文章暂时无法加载，请刷新页面重试。</p>
     </section>
-
-    <section class="about-section page-width" id="about">
-      <div class="about-icon" aria-hidden="true">✳</div>
-      <div>
-        <p class="eyebrow">A LITTLE ABOUT ME</p>
-        <h2>保持好奇，持续创造。</h2>
-        <p>这里是我的数字花园。它还在慢慢生长，欢迎常来看看。</p>
-      </div>
-      <a class="about-link" href="https://github.com/Wans-c" target="_blank" rel="noreferrer" aria-label="访问 Wans 的 GitHub">↗</a>
-    </section>
+    <section class="about-section page-width" id="about"><div class="about-icon" aria-hidden="true">✳</div><div><p class="eyebrow">A LITTLE ABOUT ME</p><h2>保持好奇，持续创造。</h2><p>这里是我的数字花园。它还在慢慢生长，欢迎常来看看。</p></div><a class="about-link" href="https://github.com/Wans-c" target="_blank" rel="noreferrer" aria-label="访问 Wans 的 GitHub">↗</a></section>
   </main>
-
-  <footer class="site-footer page-width">
-    <a class="brand footer-brand" href="#top">
-      <span class="brand-mark">W</span>
-      <span>Wans<span class="brand-light">.log</span></span>
-    </a>
-    <span>用心记录，持续成长。</span>
-    <span>© 2026 Wans</span>
-  </footer>
-
-  <dialog class="article-dialog" id="article-dialog">
-    <button class="dialog-close" id="dialog-close" aria-label="关闭文章">×</button>
-    <div id="dialog-content"></div>
-  </dialog>
-
+  <footer class="site-footer page-width"><a class="brand footer-brand" href="#top"><span class="brand-mark">W</span><span>Wans<span class="brand-light">.log</span></span></a><span>用心记录，持续成长。</span><span>© 2026 Wans</span></footer>
+  <dialog class="article-dialog" id="article-dialog"><button class="dialog-close" id="dialog-close" aria-label="关闭文章">×</button><div id="dialog-content"></div></dialog>
   <script src="script.js" defer></script>
 </body>
 </html>
